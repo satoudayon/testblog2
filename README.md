@@ -1,46 +1,54 @@
-# Astro Starter Kit: Basics
+# Astro Markdown Blog Starter
+
+Astroで学習しやすい最小構成のブログです。`src/content/blog` にMarkdownファイルを追加してGitHubへpushすると、GitHub Actionsがビルドし、GitHub Pagesへデプロイされる前提で作っています。
+
+## できること
+
+- 記事一覧ページ: `/`
+- 記事詳細ページ: `/posts/[slug]/`
+- Markdown管理: `src/content/blog/*.md`
+- 自動デプロイ: `.github/workflows/deploy.yml`
+
+## セットアップ
 
 ```sh
-npm create astro@latest -- --template basics
+npm install
+npm run dev
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+ローカル起動後は `http://localhost:4321` で確認できます。
 
-## 🚀 Project Structure
+## 記事の追加方法
 
-Inside of your Astro project, you'll see the following folders and files:
+`src/content/blog` に `.md` ファイルを追加します。
 
-```text
-/
-├── public/
-│   └── favicon.svg
-├── src
-│   ├── assets
-│   │   └── astro.svg
-│   ├── components
-│   │   └── Welcome.astro
-│   ├── layouts
-│   │   └── Layout.astro
-│   └── pages
-│       └── index.astro
-└── package.json
+```md
+---
+title: "記事タイトル"
+description: "一覧用の短い説明"
+pubDate: 2026-03-29
+tags:
+  - Astro
+  - Blog
+---
+
+# 見出し
+
+本文を書きます。
 ```
 
-To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
+ファイル名がそのままslugになります。たとえば `astro-notes.md` は `/posts/astro-notes/` として公開されます。
 
-## 🧞 Commands
+## GitHub Pagesで公開する手順
 
-All commands are run from the root of the project, from a terminal:
+1. このリポジトリをGitHubへpushする
+2. GitHubの `Settings > Pages` を開く
+3. `Build and deployment` の `Source` は `GitHub Actions` を選ぶ
+4. デフォルトブランチを `main` にしてpushする
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+以後は `main` へのpushごとに `deploy.yml` が動き、サイトが更新されます。
 
-## 👀 Want to learn more?
+## 補足
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+- `astro.config.mjs` はGitHub Actions上でリポジトリ名から `base` を切り替えるため、プロジェクトページでも動かしやすい設定です
+- `yourname.github.io` 形式のユーザーサイトでは `/` 配下、通常のリポジトリページでは `/<repository>/` 配下で公開されます

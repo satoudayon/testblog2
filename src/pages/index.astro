@@ -1,11 +1,135 @@
 ---
-import Welcome from '../components/Welcome.astro';
+import { getCollection } from 'astro:content';
 import Layout from '../layouts/Layout.astro';
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
+	(a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime(),
+);
+const dateFormatter = new Intl.DateTimeFormat('ja-JP', {
+	dateStyle: 'long',
+});
+const postHref = (id: string) => `${import.meta.env.BASE_URL}posts/${id}/`;
 ---
 
-<Layout>
-	<Welcome />
+<Layout
+	title="記事一覧 | Markdown Blog Starter"
+	description="Astroのコンテンツコレクションで管理するブログ記事一覧です。"
+>
+	<section class="hero">
+		<p class="hero-label">Astro + Markdown + GitHub Pages</p>
+		<h1>Markdownを追加してpushするだけで更新できるブログ</h1>
+		<p class="hero-copy">
+			このサンプルは、`src/content/blog` にMarkdownファイルを置くと記事一覧と詳細ページが自動生成される構成です。
+		</p>
+	</section>
+
+	<section class="post-list">
+		{posts.map((post) => (
+			<article class="post-card">
+				<p class="post-date">{dateFormatter.format(post.data.pubDate)}</p>
+				<h2>
+					<a href={postHref(post.id)}>{post.data.title}</a>
+				</h2>
+				<p class="post-description">{post.data.description}</p>
+				<div class="post-meta">
+					<span>{post.data.tags.join(' / ')}</span>
+					<a href={postHref(post.id)}>記事を読む</a>
+				</div>
+			</article>
+		))}
+	</section>
 </Layout>
+
+<style>
+	.hero {
+		padding: clamp(1.5rem, 3vw, 3rem);
+		background: linear-gradient(135deg, rgba(255, 251, 235, 0.95), rgba(254, 243, 199, 0.9));
+		border: 1px solid rgba(180, 83, 9, 0.18);
+		border-radius: 2rem;
+		box-shadow: 0 24px 60px rgba(124, 45, 18, 0.1);
+		margin-bottom: 2rem;
+	}
+
+	.hero-label {
+		margin: 0 0 0.75rem;
+		font-size: 0.8rem;
+		font-weight: 800;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: #9a3412;
+	}
+
+	h1 {
+		margin: 0;
+		font-size: clamp(2.2rem, 5vw, 4.2rem);
+		line-height: 1.05;
+		max-width: 11ch;
+	}
+
+	.hero-copy {
+		max-width: 60ch;
+		font-size: 1rem;
+		line-height: 1.8;
+		color: #4b5563;
+		margin: 1rem 0 0;
+	}
+
+	.post-list {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+		gap: 1rem;
+	}
+
+	.post-card {
+		padding: 1.4rem;
+		background: rgba(255, 250, 240, 0.95);
+		border: 1px solid rgba(31, 41, 55, 0.1);
+		border-radius: 1.4rem;
+		box-shadow: 0 20px 50px rgba(31, 41, 55, 0.08);
+	}
+
+	.post-card h2 {
+		margin: 0.4rem 0 0.85rem;
+		font-size: 1.4rem;
+	}
+
+	.post-card h2 a {
+		text-decoration: none;
+	}
+
+	.post-date {
+		margin: 0;
+		font-size: 0.85rem;
+		color: #9a3412;
+		font-weight: 700;
+	}
+
+	.post-description {
+		margin: 0;
+		line-height: 1.8;
+		color: #4b5563;
+	}
+
+	.post-meta {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 1rem;
+		margin-top: 1.25rem;
+		padding-top: 1rem;
+		border-top: 1px solid rgba(31, 41, 55, 0.08);
+		font-size: 0.92rem;
+	}
+
+	.post-meta a {
+		color: #9a3412;
+		font-weight: 700;
+	}
+
+	@media (max-width: 720px) {
+		.post-meta {
+			flex-direction: column;
+			align-items: start;
+		}
+	}
+</style>
