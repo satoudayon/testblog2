@@ -14,49 +14,116 @@ export async function getStaticPaths() {
 const { post } = Astro.props;
 const { Content } = await render(post);
 const dateFormatter = new Intl.DateTimeFormat('ja-JP', {
-	dateStyle: 'long',
+	year: 'numeric',
+	month: 'short',
+	day: 'numeric',
 });
+const posts = (await getCollection('blog', ({ data }) => !data.draft))
+	.filter((entry) => entry.id !== post.id)
+	.slice(0, 2);
+const basePath = import.meta.env.BASE_URL.endsWith('/')
+	? import.meta.env.BASE_URL
+	: `${import.meta.env.BASE_URL}/`;
+const postHref = (id: string) => `${basePath}posts/${id}/`;
 ---
 
-<Layout title={`${post.data.title} | Markdown Blog Starter`} description={post.data.description}>
-	<article class="post">
-		<p class="post-date">{dateFormatter.format(post.data.pubDate)}</p>
-		<h1>{post.data.title}</h1>
-		<p class="post-description">{post.data.description}</p>
-		<div class="tag-list">
-			{post.data.tags.map((tag: string) => <span>{tag}</span>)}
+<Layout title={`${post.data.title} | Streamlined Notes`} description={post.data.description}>
+	<section class="article-hero">
+		<div class="hero-copy">
+			<p class="hero-kicker">ARTICLE</p>
+			<p class="post-date">{dateFormatter.format(post.data.pubDate)}</p>
+			<h1>{post.data.title}</h1>
+			<p class="post-description">{post.data.description}</p>
+			<div class="tag-list">
+				{post.data.tags.map((tag: string) => <span>{tag}</span>)}
+			</div>
 		</div>
-		<div class="content">
-			<Content />
+		<div class="hero-visual">
+			<div class="grid-panel large"></div>
+			<div class="grid-panel small top"></div>
+			<div class="grid-panel small bottom"></div>
+			<div class="pulse"></div>
 		</div>
-	</article>
+	</section>
+
+	<section class="article-layout">
+		<article class="post">
+			<div class="content">
+				<Content />
+			</div>
+		</article>
+
+		<aside class="sidebar">
+			<div class="side-card">
+				<p class="side-kicker">Summary</p>
+				<p>
+					このページは、トップと同じ情報サイト風のトーンで記事本文を読めるように再構成した詳細ページです。
+				</p>
+			</div>
+
+			<div class="side-card">
+				<p class="side-kicker">More Articles</p>
+				<div class="related-list">
+					{posts.map((entry) => (
+						<a class="related-item" href={postHref(entry.id)}>
+							<span>{dateFormatter.format(entry.data.pubDate)}</span>
+							<strong>{entry.data.title}</strong>
+						</a>
+					))}
+				</div>
+			</div>
+		</aside>
+	</section>
 </Layout>
 
 <style>
-	.post {
-		padding: clamp(1.5rem, 4vw, 3rem);
-		background: rgba(255, 250, 240, 0.96);
-		border: 1px solid rgba(31, 41, 55, 0.1);
-		border-radius: 2rem;
-		box-shadow: 0 24px 60px rgba(31, 41, 55, 0.08);
+	.article-hero {
+		display: grid;
+		grid-template-columns: minmax(320px, 1.08fr) minmax(260px, 0.92fr);
+		gap: 1.2rem;
+		margin-bottom: 1.5rem;
+		align-items: stretch;
+	}
+
+	.hero-copy,
+	.post,
+	.side-card {
+		background: #fff;
+		border: 1px solid #d8e4eb;
+		border-radius: 16px;
+		box-shadow: 0 10px 30px rgba(46, 67, 90, 0.05);
+	}
+
+	.hero-copy {
+		padding: 1.5rem;
+	}
+
+	.hero-kicker,
+	.side-kicker {
+		margin: 0;
+		font-size: 0.76rem;
+		font-weight: 800;
+		text-transform: uppercase;
+		letter-spacing: 0.12em;
+		color: #22a6c5;
 	}
 
 	.post-date {
-		margin: 0;
-		font-size: 0.85rem;
-		font-weight: 700;
-		color: #9a3412;
+		margin: 0.75rem 0 0;
+		font-size: 0.84rem;
+		color: #6b7280;
 	}
 
 	h1 {
-		margin: 0.6rem 0 1rem;
-		font-size: clamp(2rem, 4vw, 3.5rem);
+		margin: 0.7rem 0 1rem;
+		font-size: clamp(2rem, 4vw, 3.4rem);
 		line-height: 1.1;
+		text-transform: uppercase;
 	}
 
 	.post-description {
 		margin: 0;
-		font-size: 1.05rem;
+		font-size: 1rem;
 		line-height: 1.8;
 		color: #4b5563;
 	}
@@ -71,10 +138,111 @@ const dateFormatter = new Intl.DateTimeFormat('ja-JP', {
 	.tag-list span {
 		padding: 0.45rem 0.8rem;
 		border-radius: 999px;
-		background: #fff7ed;
-		border: 1px solid rgba(180, 83, 9, 0.18);
+		background: #f4fbfd;
+		border: 1px solid rgba(50, 184, 214, 0.22);
 		font-size: 0.85rem;
-		color: #9a3412;
+		color: #159ebc;
+	}
+
+	.hero-visual {
+		position: relative;
+		overflow: hidden;
+		border-radius: 16px;
+		border: 1px solid rgba(191, 212, 223, 0.9);
+		background: linear-gradient(145deg, #162f44, #377ca2);
+		min-height: 280px;
+	}
+
+	.grid-panel {
+		position: absolute;
+		border-radius: 16px;
+		background: rgba(240, 249, 255, 0.1);
+		border: 1px solid rgba(255, 255, 255, 0.2);
+	}
+
+	.grid-panel.large {
+		inset: 1.4rem 1.6rem 6.6rem 1.4rem;
+	}
+
+	.grid-panel.small.top {
+		right: 1.4rem;
+		top: 2rem;
+		width: 5.4rem;
+		height: 4.4rem;
+	}
+
+	.grid-panel.small.bottom {
+		left: 2rem;
+		right: 2rem;
+		bottom: 1.4rem;
+		height: 3.4rem;
+	}
+
+	.pulse {
+		position: absolute;
+		width: 7.5rem;
+		height: 7.5rem;
+		right: 2.6rem;
+		bottom: 4.3rem;
+		border-radius: 999px;
+		background:
+			radial-gradient(circle, rgba(255, 255, 255, 0.88) 0 15%, rgba(125, 211, 252, 0.7) 16% 28%, transparent 29%),
+			radial-gradient(circle, rgba(153, 246, 228, 0.4), transparent 65%);
+	}
+
+	.article-layout {
+		display: grid;
+		grid-template-columns: minmax(0, 1.65fr) minmax(240px, 0.8fr);
+		gap: 1.2rem;
+		align-items: start;
+	}
+
+	.post {
+		padding: clamp(1.4rem, 3vw, 2.2rem);
+	}
+
+	.sidebar {
+		display: grid;
+		gap: 1rem;
+	}
+
+	.side-card {
+		padding: 1rem;
+	}
+
+	.side-card p:last-child {
+		margin: 0.65rem 0 0;
+		line-height: 1.7;
+		color: #4b5563;
+	}
+
+	.related-list {
+		display: grid;
+		gap: 0.8rem;
+		margin-top: 0.8rem;
+	}
+
+	.related-item {
+		display: grid;
+		gap: 0.2rem;
+		padding-top: 0.8rem;
+		border-top: 1px solid #e5edf2;
+		text-decoration: none;
+	}
+
+	.related-item:first-child {
+		padding-top: 0;
+		border-top: 0;
+	}
+
+	.related-item span {
+		font-size: 0.75rem;
+		color: #6b7280;
+	}
+
+	.related-item strong {
+		font-size: 0.95rem;
+		line-height: 1.5;
 	}
 
 	.content :global(*) {
@@ -85,6 +253,11 @@ const dateFormatter = new Intl.DateTimeFormat('ja-JP', {
 	.content :global(li) {
 		line-height: 1.9;
 		color: #1f2937;
+	}
+
+	.content :global(h1) {
+		font-size: 2rem;
+		text-transform: none;
 	}
 
 	.content :global(h2),
@@ -106,6 +279,13 @@ const dateFormatter = new Intl.DateTimeFormat('ja-JP', {
 	}
 
 	.content :global(a) {
-		color: #9a3412;
+		color: #169fbe;
+	}
+
+	@media (max-width: 960px) {
+		.article-hero,
+		.article-layout {
+			grid-template-columns: 1fr;
+		}
 	}
 </style>

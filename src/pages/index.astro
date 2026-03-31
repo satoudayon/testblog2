@@ -6,131 +6,406 @@ const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
 	(a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime(),
 );
 const dateFormatter = new Intl.DateTimeFormat('ja-JP', {
-	dateStyle: 'long',
+	year: 'numeric',
+	month: 'short',
+	day: 'numeric',
 });
 const basePath = import.meta.env.BASE_URL.endsWith('/')
 	? import.meta.env.BASE_URL
 	: `${import.meta.env.BASE_URL}/`;
 const postHref = (id: string) => `${basePath}posts/${id}/`;
+const featuredPosts = posts.slice(0, 4);
+const latestPosts = posts.slice(0, 3);
+const leadPost = posts[0];
+
+const visualClass = (index: number) => ['teal', 'navy', 'sky', 'mint'][index % 4];
 ---
 
 <Layout
-	title="記事一覧 | Markdown Blog Starter"
-	description="Astroのコンテンツコレクションで管理するブログ記事一覧です。"
+	title="記事一覧 | Streamlined Notes"
+	description="情報サイト風のレイアウトで、Markdownの記事を一覧表示するトップページです。"
 >
-	<section class="hero">
-		<p class="hero-label">Astro + Markdown + GitHub Pages</p>
-		<h1>Markdownを追加してpushするだけで更新できるブログ</h1>
-		<p class="hero-copy">
-			このサンプルは、`src/content/blog` にMarkdownファイルを置くと記事一覧と詳細ページが自動生成される構成です。
-		</p>
+	<section class="hero-grid">
+		<div class={`hero-visual ${visualClass(0)}`}>
+			<div class="chart-card main"></div>
+			<div class="chart-card side"></div>
+			<div class="chart-bars">
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+				<span></span>
+			</div>
+			<div class="chart-line"></div>
+		</div>
+		<div class="hero-copy">
+			<p class="section-kicker">HOME</p>
+			<h1>情報を見やすく整理する、洗練されたブログレイアウト</h1>
+			<p>
+				GitHub Pagesで公開する学習用ブログを、添付イメージに寄せた情報サイト風のトーンで再構成しています。新しい記事はMarkdownを追加するだけで一覧と詳細に反映されます。
+			</p>
+			{leadPost && (
+				<a class="hero-link" href={postHref(leadPost.id)}>
+					最新記事を見る
+				</a>
+			)}
+		</div>
 	</section>
 
-	<section class="post-list">
-		{posts.map((post) => (
-			<article class="post-card">
-				<p class="post-date">{dateFormatter.format(post.data.pubDate)}</p>
-				<h2>
-					<a href={postHref(post.id)}>{post.data.title}</a>
-				</h2>
-				<p class="post-description">{post.data.description}</p>
-				<div class="post-meta">
-					<span>{post.data.tags.join(' / ')}</span>
-					<a href={postHref(post.id)}>記事を読む</a>
-				</div>
-			</article>
-		))}
+	<section class="section-block">
+		<h2 class="section-title">Featured Topics</h2>
+		<div class="topic-grid">
+			{featuredPosts.map((post, index) => (
+				<article class="topic-card">
+					<div class={`topic-visual ${visualClass(index)}`}></div>
+					<div class="topic-body">
+						<p class="topic-tag">{post.data.tags[0] ?? 'INSIGHT'}</p>
+						<h3>
+							<a href={postHref(post.id)}>{post.data.title}</a>
+						</h3>
+						<p>{post.data.description}</p>
+					</div>
+				</article>
+			))}
+		</div>
+	</section>
+
+	<section class="section-block">
+		<h2 class="section-title">Latest Updates</h2>
+		<div class="updates-list">
+			{latestPosts.map((post) => (
+				<article class="update-row">
+					<div class="update-main">
+						<p class="update-date">{dateFormatter.format(post.data.pubDate)}</p>
+						<h3>{post.data.title}</h3>
+					</div>
+					<a class="update-link" href={postHref(post.id)}>
+						Read Article
+					</a>
+				</article>
+			))}
+		</div>
+	</section>
+
+	<section class="cta-banner">
+		<div>
+			<p class="section-kicker">NEWSLETTER</p>
+			<h2>更新を見逃さないための、情報メモの購読スペース</h2>
+		</div>
+		<a href={leadPost ? postHref(leadPost.id) : basePath}>SIGN UP</a>
 	</section>
 </Layout>
 
 <style>
-	.hero {
-		padding: clamp(1.5rem, 3vw, 3rem);
-		background: linear-gradient(135deg, rgba(255, 251, 235, 0.95), rgba(254, 243, 199, 0.9));
-		border: 1px solid rgba(180, 83, 9, 0.18);
-		border-radius: 2rem;
-		box-shadow: 0 24px 60px rgba(124, 45, 18, 0.1);
+	.hero-grid {
+		display: grid;
+		grid-template-columns: minmax(280px, 1.05fr) minmax(300px, 1fr);
+		gap: 1.4rem;
+		align-items: center;
 		margin-bottom: 2rem;
 	}
 
-	.hero-label {
+	.hero-visual,
+	.topic-visual {
+		position: relative;
+		overflow: hidden;
+		border-radius: 14px;
+		border: 1px solid rgba(191, 212, 223, 0.9);
+		background: linear-gradient(145deg, #193246, #355d7a);
+	}
+
+	.hero-visual {
+		min-height: 280px;
+		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+	}
+
+	.chart-card {
+		position: absolute;
+		border-radius: 16px;
+		border: 1px solid rgba(255, 255, 255, 0.18);
+		background: rgba(240, 249, 255, 0.1);
+		backdrop-filter: blur(10px);
+	}
+
+	.chart-card.main {
+		inset: 1.25rem 5.2rem 3.6rem 1.25rem;
+	}
+
+	.chart-card.side {
+		right: 1.25rem;
+		top: 3rem;
+		width: 3rem;
+		bottom: 4.4rem;
+	}
+
+	.chart-bars {
+		position: absolute;
+		left: 2.2rem;
+		right: 7.5rem;
+		bottom: 2rem;
+		display: flex;
+		align-items: end;
+		gap: 0.7rem;
+	}
+
+	.chart-bars span {
+		flex: 1;
+		border-radius: 999px 999px 0 0;
+		background: linear-gradient(180deg, #99f6e4, #38bdf8);
+		box-shadow: 0 0 24px rgba(125, 211, 252, 0.35);
+	}
+
+	.chart-bars span:nth-child(1) { height: 32%; }
+	.chart-bars span:nth-child(2) { height: 58%; }
+	.chart-bars span:nth-child(3) { height: 44%; }
+	.chart-bars span:nth-child(4) { height: 76%; }
+	.chart-bars span:nth-child(5) { height: 90%; }
+
+	.chart-line {
+		position: absolute;
+		left: 2rem;
+		right: 7.2rem;
+		top: 4.2rem;
+		height: 2px;
+		background: linear-gradient(90deg, transparent, #e0f2fe, transparent);
+		box-shadow:
+			40px 34px 0 0 #e0f2fe,
+			90px 12px 0 0 #e0f2fe,
+			150px 50px 0 0 #e0f2fe,
+			220px -6px 0 0 #e0f2fe;
+		transform: rotate(-9deg);
+		transform-origin: left center;
+	}
+
+	.hero-copy {
+		padding: 0.5rem 0;
+	}
+
+	.section-kicker {
 		margin: 0 0 0.75rem;
-		font-size: 0.8rem;
+		font-size: 0.74rem;
 		font-weight: 800;
-		letter-spacing: 0.14em;
+		letter-spacing: 0.12em;
 		text-transform: uppercase;
-		color: #9a3412;
+		color: #25a9c8;
 	}
 
 	h1 {
 		margin: 0;
-		font-size: clamp(2.2rem, 5vw, 4.2rem);
-		line-height: 1.05;
-		max-width: 11ch;
+		font-size: clamp(2.2rem, 4vw, 3.3rem);
+		line-height: 0.98;
+		max-width: 12ch;
+		text-transform: uppercase;
 	}
 
-	.hero-copy {
-		max-width: 60ch;
-		font-size: 1rem;
+	.hero-copy p:last-of-type {
+		margin: 1rem 0 0;
+		max-width: 58ch;
 		line-height: 1.8;
 		color: #4b5563;
-		margin: 1rem 0 0;
 	}
 
-	.post-list {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-		gap: 1rem;
-	}
-
-	.post-card {
-		padding: 1.4rem;
-		background: rgba(255, 250, 240, 0.95);
-		border: 1px solid rgba(31, 41, 55, 0.1);
-		border-radius: 1.4rem;
-		box-shadow: 0 20px 50px rgba(31, 41, 55, 0.08);
-	}
-
-	.post-card h2 {
-		margin: 0.4rem 0 0.85rem;
-		font-size: 1.4rem;
-	}
-
-	.post-card h2 a {
+	.hero-link {
+		display: inline-flex;
+		margin-top: 1.2rem;
+		color: #1aa6c6;
+		font-size: 0.85rem;
+		font-weight: 800;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
 		text-decoration: none;
 	}
 
-	.post-date {
-		margin: 0;
-		font-size: 0.85rem;
-		color: #9a3412;
-		font-weight: 700;
+	.section-block {
+		margin-bottom: 1.6rem;
 	}
 
-	.post-description {
+	.section-title {
+		margin: 0 0 0.8rem;
+		font-size: 1.8rem;
+		text-transform: uppercase;
+	}
+
+	.topic-grid {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 0.8rem;
+	}
+
+	.topic-card,
+	.update-row,
+	.cta-banner {
+		background: #fff;
+		border: 1px solid #d8e4eb;
+		border-radius: 12px;
+		box-shadow: 0 10px 30px rgba(46, 67, 90, 0.05);
+	}
+
+	.topic-card {
+		display: grid;
+		grid-template-columns: 148px 1fr;
+		overflow: hidden;
+	}
+
+	.topic-visual {
+		min-height: 124px;
+		border: 0;
+		border-right: 1px solid rgba(191, 212, 223, 0.9);
+		border-radius: 0;
+	}
+
+	.topic-visual::before,
+	.topic-visual::after {
+		content: "";
+		position: absolute;
+		inset: auto;
+		border-radius: 999px;
+		background: rgba(255, 255, 255, 0.18);
+	}
+
+	.topic-visual::before {
+		width: 7rem;
+		height: 7rem;
+		left: -1rem;
+		bottom: -1rem;
+	}
+
+	.topic-visual::after {
+		width: 3.6rem;
+		height: 3.6rem;
+		right: 1rem;
+		top: 1rem;
+	}
+
+	.topic-visual.teal,
+	.hero-visual.teal {
+		background: linear-gradient(145deg, #14324b, #2e7aa0);
+	}
+
+	.topic-visual.navy,
+	.hero-visual.navy {
+		background: linear-gradient(145deg, #1d2d4c, #425b88);
+	}
+
+	.topic-visual.sky,
+	.hero-visual.sky {
+		background: linear-gradient(145deg, #1a4454, #3aa6c9);
+	}
+
+	.topic-visual.mint,
+	.hero-visual.mint {
+		background: linear-gradient(145deg, #22464f, #48a6a0);
+	}
+
+	.topic-body {
+		padding: 0.95rem 1rem;
+	}
+
+	.topic-tag {
+		margin: 0 0 0.2rem;
+		color: #27aac9;
+		font-size: 0.72rem;
+		font-weight: 800;
+		text-transform: uppercase;
+	}
+
+	.topic-body h3,
+	.update-main h3,
+	.cta-banner h2 {
 		margin: 0;
-		line-height: 1.8;
+	}
+
+	.topic-body h3 {
+		font-size: 1.15rem;
+		line-height: 1.2;
+	}
+
+	.topic-body h3 a {
+		text-decoration: none;
+	}
+
+	.topic-body p:last-child {
+		margin: 0.4rem 0 0;
 		color: #4b5563;
+		font-size: 0.92rem;
+		line-height: 1.55;
 	}
 
-	.post-meta {
+	.updates-list {
+		display: grid;
+		gap: 0.8rem;
+	}
+
+	.update-row {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
 		gap: 1rem;
-		margin-top: 1.25rem;
-		padding-top: 1rem;
-		border-top: 1px solid rgba(31, 41, 55, 0.08);
-		font-size: 0.92rem;
+		padding: 1rem 1.1rem;
 	}
 
-	.post-meta a {
-		color: #9a3412;
-		font-weight: 700;
+	.update-date {
+		margin: 0 0 0.2rem;
+		color: #6b7280;
+		font-size: 0.78rem;
+	}
+
+	.update-main h3 {
+		font-size: 1.1rem;
+	}
+
+	.update-link,
+	.cta-banner a {
+		color: #1da8c8;
+		font-size: 0.8rem;
+		font-weight: 800;
+		text-transform: uppercase;
+		text-decoration: none;
+	}
+
+	.cta-banner {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 1rem;
+		padding: 1rem 1.1rem;
+	}
+
+	.cta-banner h2 {
+		font-size: 1.05rem;
+		line-height: 1.3;
+	}
+
+	.cta-banner a {
+		padding: 0.7rem 1rem;
+		border-radius: 10px;
+		border: 1px solid rgba(50, 184, 214, 0.65);
+	}
+
+	@media (max-width: 960px) {
+		.hero-grid,
+		.topic-grid {
+			grid-template-columns: 1fr;
+		}
+
+		.hero-visual {
+			min-height: 240px;
+		}
 	}
 
 	@media (max-width: 720px) {
-		.post-meta {
+		.topic-card {
+			grid-template-columns: 1fr;
+		}
+
+		.topic-visual {
+			min-height: 140px;
+			border-right: 0;
+			border-bottom: 1px solid rgba(191, 212, 223, 0.9);
+		}
+
+		.update-row,
+		.cta-banner {
 			flex-direction: column;
 			align-items: start;
 		}
